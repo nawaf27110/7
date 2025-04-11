@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>أختبار مادة فيزياء 3-3</title>
+
+  <!-- ربط ملف CSS (كما في الأصل) -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- مكتبة MathJax لعرض المعادلات (كما في الأصل) -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [["$","$"], ["\\(","\\)"]],
+        displayMath: [["$$","$$"], ["\\[","\\]"]]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <!-- مكتبة html2pdf (كما في الأصل) -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- تحقق بسيط من الكود والإيميل في الـ Query String (كود الصفحة الأصلية، لكنه مُعلّق أدناه) -->
+  <script>
+    /*
+    // اجلب الكود والإيميل من رابط الصفحة
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const email = params.get("email");
+
+    // إن لم يتوفر الكود والإيميل، إعادة توجيه لـ check.html
+    if(!code || !email) {
+      alert("🚫 لا يمكنك الدخول بدون كود وبريد إلكتروني");
+      window.location.href = "check.html";
+    } else {
+      console.log("كود الدخول =", code);
+      console.log("الإيميل =", email);
+      // بإمكانك هنا إضافة تحقق إضافي
+    }
+    */
+  </script>
+
+  <!-- 1) بنك الأسئلة -->
+  <script src="questionsDatabase.js"></script>
+
+  <!-- 2) كود المنطق بعده -->
+  <script src="script.js"></script>
+
+  <!--
+    يمكنك هنا أو في آخر ملف style.css إضافة التنسيقات الإضافية
+    الخاصة بقسم التحقق + الـ Media Query للتوافق مع الجوال
+  -->
+  <style>
+    /*******************************
+     * قسم التحقق (مدمج من check.html)
+     *******************************/
+    #verifySection {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .verify-container {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      max-width: 400px;
+      margin: 30px auto 0 auto;
+      padding: 20px;
+      text-align: center;
+    }
+    .verify-container input, .verify-container button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .verify-container button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .verify-container button:hover {
+      background-color: #0056b3;
+    }
+    .verify-container .red-note {
+      color: red;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .verify-container .code-box {
+      margin-top: 20px;
+      font-size: 18px;
+      color: green;
+      word-wrap: break-word;
+    }
+
+    /**********************************************
+     * أي تنسيقات من style.css (الخاصة بالاندكس)
+     * ستبقى كما هي. لو كانت في ملف خارجي،
+     * تأكد أنها مربوطة بنفس الشكل.
+     **********************************************/
+
+    /***********************************************************
+     *  مثال إضافة Media Query لتصميم الجوال
+     *  (يمكنك ضبط الحجم max-width كما تريد)
+     ***********************************************************/
+      </style>
+
+</head>
+
+<body>
+
+  <!-- ====================
+       قسم التحقق المدمج
+       ==================== -->
+  <div id="verifySection">
+    <div class="verify-container">
+      <h2>أدخل رقم الطلب والبريد</h2>
+
+      <div id="form">
+        <input type="text" id="orderId" placeholder="رقم الطلب" />
+        <input type="email" id="email" placeholder="البريد الإلكتروني" />
+        <button onclick="checkCode()">تحقق</button>
+
+        <button onclick="goToStore()">زيارة المتجر للشراء</button>
+
+        <div class="red-note">
+          رقم الطلب والايميل والروابط الخاصة المرتبطة ببنك الاسئلة مسؤليتك الشخصية.
+          <br>أي إساءة استخدام سيتم تعطيل عضويتك فورًا.
+        </div>
+      </div>
+
+      <div id="result" class="code-box"></div>
+    </div>
+  </div>
+  <!-- نهاية قسم التحقق -->
+
+  <!-- =========================
+       كل محتوى index الأصلي
+       مخفي مؤقتًا
+       ========================= -->
+  <div id="mainContent" style="display: none;">
+    <!-- الصفحة الأولى (بيانات أساسية) -->
+    <div id="page1" class="container">
+      <h3>البيانات الأساسية (جميعها حقول إلزامية)</h3>
+      
+      <!-- اسم المعلم -->
+      <label>اسم المعلم:</label>
+      <input type="text" id="teacherName" required placeholder="مثال: أ. نواف الطويلعي" oninput="saveFormState()">
+
+      <!-- العام الدراسي -->
+      <label>العام الدراسي:</label>
+      <input type="text" id="academicYear" required placeholder="مثال: 1444" oninput="updateAcademicYear(); saveFormState();">
+
+      <!-- إدارة التعليم -->
+      <label>إدارة التعليم :</label>
+      <input type="text" id="educationDepartment" required placeholder="مثال: جدة" oninput="updateEducationDepartment(); saveFormState();">
+
+      <!-- نوع الاختبار -->
+      <label>نوع الاختبار :</label>
+      <select id="examType" required onchange="updateExamType(); saveFormState();">
+        <option value="">اختر نوع الاختبار</option>
+        <option value="اختبار الفترة الاولى">اختبار الفترة الاولى</option>
+        <option value="اختبار نهائي">اختبار نهائي</option>
+        <option value="أختبار قصير">أختبار قصير</option>
+        <option value="واجب">واجب</option>
+      </select>
+
+      <!-- الدرجة الكلية -->
+      <label>الدرجة الكلية :</label>
+      <input type="number" id="manualTotalScore" required min="0" value="0" oninput="updateManualTotalScore(); saveFormState();">
+
+      <!-- اسم المدرسة -->
+      <label>اسم المدرسة :</label>
+      <input type="text" id="schoolName" required placeholder="مثال: ثانوية الملك فهد" oninput="saveFormState()">
+
+      <!-- القائمة المنسدلة لاختيار بنين/بنات -->
+      <label for="genderSelect">اختر النوع:</label>
+      <select id="genderSelect" onchange="toggleGenderMode()">
+        <option value="boys" selected>بنين</option>
+        <option value="girls">بنات</option>
+      </select>
+
+      <button onclick="validateAndGoNext()">التالي</button>
+    </div>
+
+    <!-- الصفحة الثانية (Page 2) -->
+    <div id="page2" class="container" style="display: none;">
+      <!-- اختيار الفصل/الوحدة -->
+      <label>اختر الموضوع (الفصل):</label>
+      <select id="subject" onchange="showSubtopics()">
+        <option value="">اختر الموضوع</option>
+        <option value="electromagnetic_induction">الفصل الاول الحث الكهرومغناطيسي</option>
+        <option value="electromagnetism">الفصل الثاني الكهرومغناطيسية</option>
+        <option value="quantum_theory">الفصل الثالث نظرية الكم</option>
+        <option value="atomic_physics">الفصل الرابع الذرة</option>
+        <option value="solid_state_electronics">الفصل الخامس الكترونيات الحالة الصلبة</option>
+        <option value="nuclear_physics">الفصل السادس الفيزياء النووية</option>
+      </select>
+
+      <label id="subtopicLabel" style="display:none;">اختر القسم الفرعي:</label>
+      <select id="subtopicSelect" style="display:none;" onchange="showQuestionsForSubtopic()">
+        <option value="">اختر القسم الفرعي</option>
+      </select>
+
+      <!-- قسم عرض قائمة الأسئلة -->
+      <div id="questionList" style="
+        display:none; 
+        border:1px solid #ccc; 
+        padding:10px; 
+        min-height:120px; 
+        max-height:400px; 
+        overflow:auto; 
+        width:100%;
+      ">
+        <p style="font-size:14px; color:#999; text-align:center;">اختر سؤال لإضافته</p>
+      </div>
+
+      <hr style="margin: 20px 0;">
+
+      <!-- البحث في جميع الأسئلة -->
+      <h4>البحث في جميع الأسئلة (في كامل قاعدة البيانات)</h4>
+      <input type="text" id="searchQuestionsInput" placeholder="اكتب كلمات البحث..." oninput="searchAllQuestions()">
+      <div id="searchResults" style="border:1px solid #ccc; padding:5px; min-height:120px; max-height:200px; overflow:auto;">
+        <p style="font-size:14px; color:#999; text-align:center;">اكتب كلمات البحث أعلاه</p>
+      </div>
+
+      <hr style="margin: 20px 0;">
+
+      <!-- إضافة سؤال مخصص -->
+      <h4>إضافة سؤال مخصص</h4>
+      <select id="customQuestionType" onchange="handleCustomTypeChange()">
+        <option value="">اختر نوع السؤال</option>
+        <option value="mcq">سؤال اختيار متعدد</option>
+        <option value="tf">سؤال صح وخطأ</option>
+        <option value="essay">سؤال مقالي/مسألة</option>
+      </select>
+
+      <div id="customFieldsContainer">
+        <!-- MCQ Fields -->
+        <div id="mcqFields" style="display:none; margin-top:10px;">
+          <textarea id="mcqQuestionInput" rows="2" placeholder="نص السؤال"></textarea>
+          <input type="text" id="mcqOption1" placeholder="الخيار الأول">
+          <input type="text" id="mcqOption2" placeholder="الخيار الثاني">
+          <input type="text" id="mcqOption3" placeholder="الخيار الثالث">
+          <input type="text" id="mcqOption4" placeholder="الخيار الرابع">
+        </div>
+
+        <!-- TF Fields -->
+        <div id="tfFields" style="display:none; margin-top:10px;">
+          <textarea id="tfQuestionInput" rows="2" placeholder="نص السؤال"></textarea>
+        </div>
+
+        <!-- Essay Fields -->
+        <div id="essayFields" style="display:none; margin-top:10px;">
+          <textarea id="essayQuestionInput" rows="4" placeholder="نص السؤال المقالي أو المسألة"></textarea>
+          <input type="file" id="essayImageInput" accept="image/*">
+        </div>
+      </div>
+
+      <button onclick="addCustomQuestion()" style="display:none;" id="addCustomBtn">أضف السؤال</button>
+
+      <hr style="margin: 20px 0;">
+
+      <!-- زر طباعة -->
+      <button onclick="printExam()">معاينة الشكل النهائي لورقة الاختبار - حفظ PDF - طباعة</button>
+
+      <!-- زر الرجوع للصفحة الأولى -->
+      <button onclick="goBackToPage1()">رجوع</button>
+    </div>
+
+    <!-- منطقة المعاينة النهائية للاختبار -->
+    <div id="examPreview">
+      <img id="examLogo" class="exam-logo" src="https://i.imgur.com/gcGPjyB.png" alt="شعار وزارة التعليم">
+      <div class="header">
+        <p class="test-time" id="testTime"></p>
+        <p>المملكة العربية السعودية</p>
+        <p>وزارة التعليم</p>
+        <p id="educationDepartmentHeader">إدارة التعليم بمنطقة</p>
+        <p id="schoolHeader">اسم المدرسة</p>
+        <p class="student-name" id="studentHeader">اسم الطالب: ____________________</p>
+        <p class="seat-number" id="seatNumber" style="position: absolute; top: 85px; left: 10px;">رقم الجلوس: ____________________</p>
+        <p class="teacher-name" id="teacherHeader">معلم المادة: </p>
+      </div>
+
+      <p style="font-size: 18px; font-weight: bold;" id="academicYearDisplay">
+        - فيزياء 1 أول ثانوي العام الدراسي الفصل الدراسي الأول
+      </p>
+      <p id="examDetails"></p>
+      <hr style="margin: 20px 0; border: 1px solid #000;">
+
+      <div class="grade-container" style="display:none;">
+        <div class="grade-label">الدرجة الكلية</div>
+        <div class="split-box">
+          <div class="upper"></div>
+          <div class="lower" id="totalExamScore">0</div>
+        </div>
+      </div>
+
+      <div id="questionsCount">
+        <p>عدد أسئلة الاختيار المتعدد: <span id="mcqCount">0</span></p>
+        <p>عدد أسئلة الصح والخطأ: <span id="tfCount">0</span></p>
+        <p>عدد الأسئلة المقالية: <span id="essayCount">0</span></p>
+        <p>العدد الكلي للأسئلة: <span id="totalQuestionsCount">0</span></p>
+      </div>
+
+      <div class="mcq-section" style="display:none;">
+        <h3></h3>
+        <ol id="mcqList" style="margin: 0; padding: 0 20px;"></ol>
+      </div>
+      <div class="tf-section" style="display:none;">
+        <h3></h3>
+        <ol id="tfList"></ol>
+      </div>
+      <div class="essay-section" style="display:none;">
+        <h3></h3>
+        <ol id="essayList"></ol>
+      </div>
+    </div>
+    <!-- نهاية المحتوى الأصلي -->
+  </div> <!-- نهاية mainContent -->
+
+  <script>
+    /* ===========================
+       دوال قسم التحقق (مأخوذة من check.html)
+       =========================== */
+
+    // رابط الدالة لجلب بيانات الطلبات
+    const sheetURL = "/.netlify/functions/sheetdata";
+
+    // حفظ وإعادة تعبئة الحقول من LocalStorage:
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedOrderId = localStorage.getItem('savedOrderId');
+      const savedEmail = localStorage.getItem('savedEmail');
+      if (savedOrderId) {
+        document.getElementById('orderId').value = savedOrderId;
+      }
+      if (savedEmail) {
+        document.getElementById('email').value = savedEmail;
+      }
+    });
+
+    async function checkCode(orderIdParam = '', emailParam = '') {
+      const orderId = orderIdParam || document.getElementById('orderId').value.trim();
+      const email = emailParam || document.getElementById('email').value.trim().toLowerCase();
+      const resultBox = document.getElementById('result');
+
+      if (!orderId || !email) {
+        resultBox.textContent = 'الرجاء تعبئة البيانات أولاً';
+        return;
+      }
+
+      // نحفظ آخر مدخلات في LocalStorage
+      localStorage.setItem('savedOrderId', orderId);
+      localStorage.setItem('savedEmail', email);
+
+      resultBox.textContent = 'جاري التحقق...';
+
+      try {
+        // جلب بيانات الطلبات
+        const response = await fetch(sheetURL);
+        if (!response.ok) {
+          throw new Error("فشل في الاتصال بالدالة");
+        }
+
+        const data = await response.json();
+        // ابحث عن سجل يطابق order_id والبريد
+        const match = data.find(entry =>
+          entry.order_id?.trim() === orderId &&
+          entry.email?.trim().toLowerCase() === email
+        );
+
+        if (match) {
+          alert("✅ تم العثور على الطلب، سيتم عرض الصفحة الآن");
+          // إخفاء قسم التحقق
+          document.getElementById('verifySection').style.display = 'none';
+          // إظهار المحتوى الأصلي
+          document.getElementById('mainContent').style.display = 'block';
+
+          resultBox.textContent = "تم التحقق بنجاح!";
+        } else {
+          alert("❌ الطلب غير موجود أو البيانات غير صحيحة");
+          resultBox.textContent = '❌ لم يتم العثور على الطلب. تأكد من البيانات.';
+        }
+      } catch (err) {
+        alert("❌ حدث خطأ أثناء الاتصال أو أثناء جلب البيانات");
+        resultBox.textContent = 'حدث خطأ أثناء التحقق.';
+        console.error(err);
+      }
+    }
+
+    function goToStore() {
+      const storeUrl = "https://myexams.myshopify.com/products/باقة-مادة-واحدة-15ريال";
+      const chromeSchemeUrl = "googlechrome://myexams.myshopify.com/products/باقة-مادة-واحدة-15ريال";
+
+      window.location.href = chromeSchemeUrl;
+      setTimeout(() => {
+        window.location.href = storeUrl;
+      }, 2000);
+    }
+  </script>
+
+</body>
+</html>
